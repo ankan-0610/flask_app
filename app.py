@@ -6,7 +6,7 @@ import base64
 import cv2
 import requests
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Create Flask app
@@ -58,11 +58,11 @@ def generate_plot():
 
     RB_ratio, Conc = get_analysis(RB_ratio, Conc)
 
-    RB_Model = LinearRegression()
+    RB_Model = RandomForestRegressor(n_estimators=100, random_state=42)
     RB_Model.fit(RB_ratio.reshape(-1, 1), Conc)
-    GB_Model = LinearRegression()
+    GB_Model = RandomForestRegressor(n_estimators=100, random_state=42)
     GB_Model.fit(GB_ratio.reshape(-1, 1), Conc)
-    RG_Model = LinearRegression()
+    RG_Model = RandomForestRegressor(n_estimators=100, random_state=42)
     RG_Model.fit(RG_ratio.reshape(-1, 1), Conc)
 
     # Calculate R-squared scores
