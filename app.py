@@ -7,6 +7,9 @@ import cv2
 import requests
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Create Flask app
 
 app = Flask(__name__)
 
@@ -55,14 +58,41 @@ def generate_plot():
 
     RB_ratio, Conc = get_analysis(RB_ratio, Conc)
 
-    LR = LinearRegression()
-    LR.fit(RB_ratio.reshape(-1, 1), Conc)
-    RB_pred = LR.predict(RB_ratio.reshape(-1, 1))
+    RB_Model = LinearRegression()
+    RB_Model.fit(RB_ratio.reshape(-1, 1), Conc)
+    GB_Model = LinearRegression()
+    GB_Model.fit(GB_ratio.reshape(-1, 1), Conc)
+    RG_Model = LinearRegression()
+    RG_Model.fit(RG_ratio.reshape(-1, 1), Conc)
 
-    plt.scatter(Conc, RB_ratio)
-    plt.plot(RB_pred, RB_ratio)
+    # Calculate R-squared scores
+    r2_RB = r2_score(Conc, RB_Model.predict(RB_ratio.reshape(-1, 1)))
+    r2_GB = r2_score(Conc, GB_Model.predict(GB_ratio.reshape(-1, 1)))
+    r2_RG = r2_score(Conc, RG_Model.predict(RG_ratio.reshape(-1, 1)))
+
+    # Choose the model with the highest R-squared score
+    best_model = None
+    x_values = None
+    y_label = None
+    if r2_RB >= r2_GB and r2_RB >= r2_RG:
+        best_model = RB_Model
+        x_values = RB_ratio
+        y_label = 'R/B ratio'
+    elif r2_GB >= r2_RB and r2_GB >= r2_RG:
+        best_model = GB_Model
+        x_values = GB_ratio
+        y_label = 'G/B ratio'
+    else:
+        best_model = RG_Model
+        x_values = RG_ratio
+        y_label = 'R/G ratio'
+
+    predictions = best_model.predict(x_values.reshape(-1, 1))
+
+    plt.scatter(Conc, x_values)
+    plt.plot(predictions, x_values)
     plt.xlabel("Conc in uM")
-    plt.ylabel("B/R ratio")
+    plt.ylabel(y_label)
 
     # Your logic to generate plot using Matplotlib
     # Example: (Replace this with your actual logic)
@@ -81,7 +111,10 @@ def generate_plot():
     plt.close()
 
     # Example table data (Replace this with your actual data)
-    table_data = [{'Column1': 'Value1', 'Column2': 'Value2'}, {'Column1': 'Value3', 'Column2': 'Value4'}]
+    # Create table_data by dynamically copying values from numpy arrays
+    table_data = [{'Actual Concentration': str(value1), 
+                    'Predicted Concentration': str(value2)} 
+                    for value1, value2 in zip(Conc, predictions)]
 
     return jsonify({'plotImage': image_base64, 'tableData': table_data})
 
