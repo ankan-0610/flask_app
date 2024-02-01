@@ -7,7 +7,7 @@ import cv2
 import requests
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import r2_score
 
 # Create Flask app
 
@@ -55,8 +55,12 @@ def generate_plot():
     GB_ratio = np.array(GB_ratio)
     RB_ratio = np.array(RB_ratio)
     RG_ratio = np.array(RG_ratio)
+    BG_ratio = np.array(BG_ratio)
+    BR_ratio = np.array(BR_ratio)
+    GR_ratio = np.array(GR_ratio)
 
-    RB_ratio, Conc = get_analysis(RB_ratio, Conc)
+    GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc = get_analysis(GB_ratio, 
+                                    RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc)
 
     RB_Model = RandomForestRegressor(n_estimators=100, random_state=42)
     RB_Model.fit(RB_ratio.reshape(-1, 1), Conc)
@@ -143,18 +147,29 @@ def get_GR(img):
     b, g, r = cv2.split(img)
     return np.mean(g) / np.mean(r)
 
-def get_analysis(RB_ratio, Conc):
+def get_analysis(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc):
     # Create pairs of elements from both arrays
-    pairs = list(zip(Conc, RB_ratio))
+    pairs = list(zip(Conc, GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio))
 
     # Sort the pairs based on the first element of each pair
     sorted_pairs = sorted(pairs, key=lambda x: x[0])
 
-    # Extract the second elements from the sorted pairs
-    RB_ratio = np.array([pair[1] for pair in sorted_pairs])
-    Conc_np = np.array([pair[0] for pair in sorted_pairs])
-
-    return RB_ratio, Conc_np
+    Conc_np = np.array([])
+    RB_ratio = np.array([])
+    GB_ratio = np.array([])
+    RG_ratio = np.array([])
+    BG_ratio = np.array([])
+    BR_ratio = np.array([])
+    GR_ratio = np.array([])
+    for pair in sorted_pairs:
+        Conc_np = np.append(Conc_np,pair[0])
+        GB_ratio = np.append(GB_ratio, pair[1])
+        RB_ratio = np.append(RB_ratio, pair[2])
+        RG_ratio = np.append(RG_ratio, pair[3])
+        BG_ratio = np.append(BG_ratio, pair[4])
+        BR_ratio = np.append(BR_ratio, pair[5])
+        GR_ratio = np.append(GR_ratio, pair[6])
+    return GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc_np
 
 # if __name__ == '__main__':
 #     app.run()
