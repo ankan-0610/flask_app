@@ -13,6 +13,9 @@ from sklearn.metrics import r2_score
 
 app = Flask(__name__)
 
+best_model = None
+ratio_num = 0
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
@@ -59,7 +62,7 @@ def generate_plot():
     BR_ratio = np.array(BR_ratio)
     GR_ratio = np.array(GR_ratio)
 
-    GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc = get_analysis(GB_ratio, 
+    GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc = sort_arrays(GB_ratio, 
                                     RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc)
 
     RB_Model = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -75,21 +78,23 @@ def generate_plot():
     r2_RG = r2_score(Conc, RG_Model.predict(RG_ratio.reshape(-1, 1)))
 
     # Choose the model with the highest R-squared score
-    best_model = None
     x_values = None
     y_label = None
     if r2_RB >= r2_GB and r2_RB >= r2_RG:
         best_model = RB_Model
         x_values = RB_ratio
         y_label = 'R/B ratio'
+        ratio_num=0
     elif r2_GB >= r2_RB and r2_GB >= r2_RG:
         best_model = GB_Model
         x_values = GB_ratio
         y_label = 'G/B ratio'
+        ratio_num=1
     else:
         best_model = RG_Model
         x_values = RG_ratio
         y_label = 'R/G ratio'
+        ratio_num=2
 
     predictions = best_model.predict(x_values.reshape(-1, 1))
 
@@ -147,7 +152,7 @@ def get_GR(img):
     b, g, r = cv2.split(img)
     return np.mean(g) / np.mean(r)
 
-def get_analysis(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc):
+def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc):
     # Create pairs of elements from both arrays
     pairs = list(zip(Conc, GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio))
 
@@ -173,3 +178,35 @@ def get_analysis(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Con
 
 # if __name__ == '__main__':
 #     app.run()
+@app.route( '/predict_result', methods=['POST'] )
+def predict_result():
+    
+    data = request.get_json()
+    image_urls = data['imageUrls']
+    prediction_results = []
+    # loop through the urls
+    for idx, image_url in enumerate(image_urls):
+        try:
+            response = requests.get(image_url)
+            response.raise_for_status()  # Raise an HTTPError for bad responses
+            image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
+            img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+            b, g, r = cv2.split(img)
+            rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
+
+            prediction = None
+            if(ratio_num==0):
+                prediction = best_model.predict(np.mean(r)/np.mean(b))
+            elif(ratio_num==1):
+                prediction = best_model.predict(np.mean(g)/np.mean(b))
+            else:
+                prediction = best_model.predict(np.mean(r)/np.mean(g))
+
+            prediction_results.append({'image_url': image_url, 'prediction': prediction.tolist(), 'rgb_values': rgb_values})
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching image {idx}: {e}")
+            return
+
+    return jsonify(prediction_results)
