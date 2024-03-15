@@ -193,12 +193,10 @@ def predict_result():
             img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
             b, g, r = cv2.split(img)
-            rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
+            # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
 
             # Convert the image to grayscale
             gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            #lculate the mean value of the grayscale image
-            mean_value = np.mean(gray_image)
 
             # prediction = None
             # if(ratio_num==0):
@@ -208,7 +206,9 @@ def predict_result():
             # else:
             #     prediction = best_model.predict(np.mean(r)/np.mean(g))
 
-            prediction_results.append({'image_url': image_url, 'rgb_values': rgb_values, 'grayscale': mean_value})
+            prediction_results.append({'image_url': image_url, 'r_value': np.mean(r),
+                                    'g_value': np.mean(g), 'b_value': np.mean(b),
+                                    'grayscale': np.mean(gray_image)})
 
         except requests.exceptions.RequestException as e:
             print(f"Error fetching image {idx}: {e}")
