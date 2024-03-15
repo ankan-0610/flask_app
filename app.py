@@ -206,9 +206,13 @@ def predict_result():
             # else:
             #     prediction = best_model.predict(np.mean(r)/np.mean(g))
 
-            prediction_results.append({'image_url': image_url, 'r_value': np.mean(r),
-                                    'g_value': np.mean(g), 'b_value': np.mean(b),
-                                    'grayscale': np.mean(gray_image)})
+            prediction_results.append({
+                'image_url': image_url,
+                'r_value': int(round(np.mean(r))),
+                'g_value': int(round(np.mean(g))),
+                'b_value': int(round(np.mean(b))),
+                'grayscale': int(round(np.mean(gray_image)))
+            })
 
         except requests.exceptions.RequestException as e:
             print(f"Error fetching image {idx}: {e}")
