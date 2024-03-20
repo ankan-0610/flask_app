@@ -191,12 +191,13 @@ def predict_result():
             response.raise_for_status()  # Raise an HTTPError for bad responses
             image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
             img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+            gray_image = cv2.imread(image_array, cv2.IMREAD_GRAYSCALE)
 
             b, g, r = cv2.split(img)
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
 
             # Convert the image to grayscale
-            gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
 
             # prediction = None
             # if(ratio_num==0):
