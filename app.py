@@ -8,7 +8,7 @@ import requests
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-import pickle
+# import pickle
 
 # Create Flask app
 
@@ -180,9 +180,9 @@ def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc
 # if __name__ == '__main__':
 #     app.run()
 
-# Load the model from the pickle file
-with open('your_model.pkl', 'rb') as f:
-    best_model = pickle.load(f)
+# # Load the model from the pickle file
+# with open('your_model.pkl', 'rb') as f:
+#     best_model = pickle.load(f)
 
 @app.route( '/predict_result', methods=['POST'] )
 def predict_result():
