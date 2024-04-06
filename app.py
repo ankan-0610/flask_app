@@ -8,6 +8,7 @@ import requests
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
+import pickle
 
 # Create Flask app
 
@@ -178,6 +179,11 @@ def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc
 
 # if __name__ == '__main__':
 #     app.run()
+
+# Load the model from the pickle file
+with open('your_model.pkl', 'rb') as f:
+    best_model = pickle.load(f)
+
 @app.route( '/predict_result', methods=['POST'] )
 def predict_result():
     
@@ -191,7 +197,7 @@ def predict_result():
             response.raise_for_status()  # Raise an HTTPError for bad responses
             image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
             img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-            gray_image = cv2.imread(image_array, cv2.IMREAD_GRAYSCALE)
+            # gray_image = cv2.imread(image_array, cv2.IMREAD_GRAYSCALE)
 
             b, g, r = cv2.split(img)
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
@@ -212,7 +218,7 @@ def predict_result():
                 'r_value': int(round(np.mean(r))),
                 'g_value': int(round(np.mean(g))),
                 'b_value': int(round(np.mean(b))),
-                'grayscale': int(round(np.mean(gray_image)))
+                # 'grayscale': int(round(np.mean(gray_image)))
             })
 
         except requests.exceptions.RequestException as e:
