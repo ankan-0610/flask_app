@@ -196,14 +196,20 @@ def predict_result():
             response = requests.get(image_url)
             response.raise_for_status()  # Raise an HTTPError for bad responses
             image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
-            img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-            # gray_image = cv2.imread(image_array, cv2.IMREAD_GRAYSCALE)
+            # img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+            gray_image = cv2.imread(image_array, cv2.IMREAD_GRAYSCALE)
 
-            b, g, r = cv2.split(img)
+            # b, g, r = cv2.split(img)
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
+            g0 = 113.67090909090909
 
-            # Convert the image to grayscale
-            
+            feature = (g0-np.mean(gray_image))/g0
+
+            conc = None
+            if feature <= 0.5182:
+                conc = 7.96051584*feature - 0.0021198
+            else:
+                conc = 41.5800416*feature - 17.37
 
             # prediction = None
             # if(ratio_num==0):
@@ -215,10 +221,8 @@ def predict_result():
 
             prediction_results.append({
                 'image_url': image_url,
-                'r_value': int(round(np.mean(r))),
-                'g_value': int(round(np.mean(g))),
-                'b_value': int(round(np.mean(b))),
-                # 'grayscale': int(round(np.mean(gray_image)))
+                'conc': round(conc, 2),
+                'grayscale': int(round(np.mean(gray_image))),
             })
 
         except requests.exceptions.RequestException as e:
