@@ -206,7 +206,7 @@ def get_model(model_name):
         return download_model(model_name)
     return local_model_path
 
-# Load the Pickle model after ensuring it's downloaded
+# Load the joblib model after ensuring it's downloaded
 def load_model(model_name):
     model_path = get_model(model_name)  # Ensure the model is downloaded
     print(f"Loading model from {model_path}...")
