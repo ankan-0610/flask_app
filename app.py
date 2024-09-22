@@ -244,9 +244,10 @@ def predict_result():
 
             prediction_results.append({
                 'image_url': image_url,
-                'conc': round(conc, 2),
+                'conc': np.round(conc, 2),
                 'grayscale': int(round(np.mean(gray_image))),
             })
+            print(conc)
 
         except requests.exceptions.RequestException as e:
             print(f"Error fetching image {idx}: {e}")
