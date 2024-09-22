@@ -9,7 +9,7 @@ import numpy as np
 import os, json
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-import pickle
+from joblib import load
 
 # Create Flask app
 
@@ -211,9 +211,7 @@ def load_model(model_name):
     model_path = get_model(model_name)  # Ensure the model is downloaded
     print(f"Loading model from {model_path}...")
     
-    # Load the model using pickle
-    with open(model_path, 'rb') as model_file:
-        model = pickle.load(model_file)
+    model = load(model_path)
     
     return model
 
@@ -223,7 +221,7 @@ def predict_result():
     image_urls = data['imageUrls']
     prediction_results = []
 
-    model = load_model('BR_model.pkl')
+    model = load_model('BR_model.joblib')
 
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
