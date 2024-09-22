@@ -217,13 +217,13 @@ def load_model(model_name):
     
     return model
 
+model = load_model('BR_model.pkl')
+
 @app.route( '/predict_result', methods=['POST'] )
 def predict_result():
     data = request.get_json()
     image_urls = data['imageUrls']
     prediction_results = []
-
-    model = load_model('BR_model.pkl')
 
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
