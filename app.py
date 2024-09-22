@@ -9,7 +9,7 @@ import numpy as np
 import os, json
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-from joblib import load
+import cloudpickle as cp
 
 # Create Flask app
 
@@ -211,7 +211,9 @@ def load_model(model_name):
     model_path = get_model(model_name)  # Ensure the model is downloaded
     print(f"Loading model from {model_path}...")
     
-    model = load(model_path)
+    # Loading
+    with open('BR_model.pkl', 'rb') as f:
+        model = cp.load(f)
     
     return model
 
@@ -221,7 +223,7 @@ def predict_result():
     image_urls = data['imageUrls']
     prediction_results = []
 
-    model = load_model('BR_model.joblib')
+    model = load_model('BR_model.pkl')
 
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
