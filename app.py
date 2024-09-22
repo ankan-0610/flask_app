@@ -240,7 +240,7 @@ def predict_result():
 
             feature = g0/np.mean(g)
 
-            conc = model.predict(feature)
+            conc = model.predict(feature.reshape(-1,1))
 
             prediction_results.append({
                 'image_url': image_url,
