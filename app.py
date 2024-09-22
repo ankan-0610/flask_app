@@ -15,9 +15,6 @@ import pickle
 
 app = Flask(__name__)
 
-best_model = None
-ratio_num = 0
-
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
@@ -192,7 +189,7 @@ from firebase_admin import credentials, storage
 service_account_info = json.loads(os.getenv('FIREBASE_SERVICE_ACCOUNT'))
 cred = credentials.Certificate(service_account_info)
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'gs://image-poc-1ba68.appspot.com'
+    'storageBucket': 'image-poc-1ba68.appspot.com'
 })
 
 # Download model from Firebase Storage
