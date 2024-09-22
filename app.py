@@ -6,9 +6,10 @@ import base64
 import cv2
 import requests
 import numpy as np
+import os, json
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-# import pickle
+import pickle
 
 # Create Flask app
 
@@ -184,40 +185,65 @@ def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc
 # with open('your_model.pkl', 'rb') as f:
 #     best_model = pickle.load(f)
 
+import firebase_admin
+from firebase_admin import credentials, storage
+
+# Load the service account JSON from environment variable
+service_account_info = json.loads(os.getenv('FIREBASE_SERVICE_ACCOUNT'))
+cred = credentials.Certificate(service_account_info)
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'gs://image-poc-1ba68.appspot.com'
+})
+
+# Download model from Firebase Storage
+def download_model(model_name):
+    bucket = storage.bucket()
+    blob = bucket.blob(f'ml_models/{model_name}')
+    model_path = f'{model_name}'
+    blob.download_to_filename(model_path)
+    return model_path
+
+def get_model(model_name):
+    local_model_path = f'{model_name}'
+    if not os.path.exists(local_model_path):
+        return download_model(model_name)
+    return local_model_path
+
+# Load the Pickle model after ensuring it's downloaded
+def load_model(model_name):
+    model_path = get_model(model_name)  # Ensure the model is downloaded
+    print(f"Loading model from {model_path}...")
+    
+    # Load the model using pickle
+    with open(model_path, 'rb') as model_file:
+        model = pickle.load(model_file)
+    
+    return model
+
 @app.route( '/predict_result', methods=['POST'] )
 def predict_result():
-    
     data = request.get_json()
     image_urls = data['imageUrls']
     prediction_results = []
+
+    model = load_model('BR_model.pkl')
+
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
         try:
             response = requests.get(image_url)
             response.raise_for_status()  # Raise an HTTPError for bad responses
             image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
-            # img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+            img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
             gray_image = cv2.imdecode(image_array, cv2.IMREAD_GRAYSCALE)
 
-            # b, g, r = cv2.split(img)
+            b, g, r = cv2.split(img)
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
-            g0 = 113.67090909090909
+            g0 = 154.45386363636365
 
-            feature = (g0-np.mean(gray_image))/g0
+            feature = g0/np.mean(g)
 
-            conc = None
-            if feature <= 0.5182:
-                conc = 7.96051584*feature - 0.0021198
-            else:
-                conc = 41.5800416*feature - 17.37
-
-            # prediction = None
-            # if(ratio_num==0):
-            #     prediction = best_model.predict(np.mean(r)/np.mean(b))
-            # elif(ratio_num==1):
-            #     prediction = best_model.predict(np.mean(g)/np.mean(b))
-            # else:
-            #     prediction = best_model.predict(np.mean(r)/np.mean(g))
+            conc = model.predict(feature)
 
             prediction_results.append({
                 'image_url': image_url,
