@@ -184,11 +184,6 @@ def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc
 
 import firebase_admin
 from firebase_admin import credentials, storage
-from dotenv import load_dotenv
-import os
-
-# Load environment variables from the .env file
-load_dotenv()
 
 # Load the service account JSON from environment variable
 service_account_info = json.loads(os.getenv('FIREBASE_SERVICE_ACCOUNT'))
@@ -239,7 +234,7 @@ def predict_result():
     image_urls = data['imageUrls']
     prediction_results = []
 
-    gray0=113.67090909
+    gray0=-1
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
         try:
@@ -249,13 +244,18 @@ def predict_result():
             img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
             gray_image = cv2.imdecode(image_array, cv2.IMREAD_GRAYSCALE)
 
+            mean_gray=np.mean(gray_image)
+            if gray0==-1:
+                gray0=mean_gray
+
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
 
-            feature = np.mean(gray_image)/gray0
+            feature = 1-mean_gray/gray0
 
-            model = load_model('BR_model.pkl')
-
-            conc = model.predict(feature.reshape(-1,1))
+            if feature<0.5182:
+                conc = float(0.12562*feature + 0.00026629)
+            else:
+                conc = float(0.02405*feature + 0.41775)
 
             prediction_results.append({
                 'image_url': image_url,
@@ -268,8 +268,3 @@ def predict_result():
             return
 
     return jsonify(prediction_results)
-
-if __name__ == '__main__':
-    # Run the app on a specific port, e.g., 8080
-    app.run(host='localhost',port=8080, debug=True)  # Specify your desired port here
-    print(f"Server running on port {8080}")
