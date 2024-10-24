@@ -217,8 +217,6 @@ def load_model(model_name):
     
     return model
 
-model = load_model('BR_model.pkl')
-
 @app.route( '/predict_result', methods=['POST'] )
 def predict_result():
     data = request.get_json()
@@ -239,6 +237,8 @@ def predict_result():
             g0 = 154.45386363636365
 
             feature = g0/np.mean(g)
+
+            model = load_model('BR_model.pkl')
 
             conc = model.predict(feature.reshape(-1,1))
 
