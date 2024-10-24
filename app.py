@@ -236,7 +236,7 @@ def predict_result():
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
             g0 = 154.45386363636365
 
-            feature = 2.5
+            feature = np.array([2.5])
 
             model = load_model('BR_model.pkl')
 
