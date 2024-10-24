@@ -1,3 +1,7 @@
 .vercel
 .env
 serviceAccountKey.json
+
+modelTest.py
+BR_model.pkl
+__pycache__

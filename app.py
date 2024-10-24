@@ -184,6 +184,11 @@ def sort_arrays(GB_ratio, RB_ratio, RG_ratio, BG_ratio, BR_ratio, GR_ratio, Conc
 
 import firebase_admin
 from firebase_admin import credentials, storage
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from the .env file
+load_dotenv()
 
 # Load the service account JSON from environment variable
 service_account_info = json.loads(os.getenv('FIREBASE_SERVICE_ACCOUNT'))
@@ -234,6 +239,7 @@ def predict_result():
     image_urls = data['imageUrls']
     prediction_results = []
 
+    gray0=113.67090909
     # loop through the urls
     for idx, image_url in enumerate(image_urls):
         try:
@@ -243,11 +249,9 @@ def predict_result():
             img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
             gray_image = cv2.imdecode(image_array, cv2.IMREAD_GRAYSCALE)
 
-            b, g, r = cv2.split(img)
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
-            g0 = 154.45386363636365
 
-            feature = g0/np.mean(g)
+            feature = np.mean(gray_image)/gray0
 
             model = load_model('BR_model.pkl')
 
@@ -264,3 +268,8 @@ def predict_result():
             return
 
     return jsonify(prediction_results)
+
+if __name__ == '__main__':
+    # Run the app on a specific port, e.g., 8080
+    app.run(host='localhost',port=8080, debug=True)  # Specify your desired port here
+    print(f"Server running on port {8080}")
