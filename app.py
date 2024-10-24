@@ -244,7 +244,7 @@ def predict_result():
 
             prediction_results.append({
                 'image_url': image_url,
-                'conc': float(np.round(g, 2)[0]),
+                'conc': float(np.round(np.mean(g), 2)),
                 'grayscale': int(round(np.mean(gray_image))),
             })
             print(conc)
