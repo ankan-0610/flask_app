@@ -202,9 +202,20 @@ def download_model(model_name):
 
 def get_model(model_name):
     local_model_path = f'{model_name}'
-    if not os.path.exists(local_model_path):
-        return download_model(model_name)
-    return local_model_path
+    if os.path.exists(local_model_path):
+        delete_file(local_model_path)
+    return download_model(model_name)
+
+def delete_file(file_path):
+    """Delete a file from the system if it exists."""
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"File {file_path} has been deleted.")
+        else:
+            print(f"File {file_path} does not exist.")
+    except Exception as e:
+        print(f"Error deleting file {file_path}: {e}")
 
 # Load the joblib model after ensuring it's downloaded
 def load_model(model_name):
