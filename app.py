@@ -236,7 +236,7 @@ def predict_result():
             # rgb_values = [np.mean(r), np.mean(g), np.mean(b)]
             g0 = 154.45386363636365
 
-            feature = np.array([2.5])
+            feature = g0/np.mean(g)
 
             model = load_model('BR_model.pkl')
 
@@ -244,7 +244,7 @@ def predict_result():
 
             prediction_results.append({
                 'image_url': image_url,
-                'conc': float(np.round(conc, 2)[-1]),
+                'conc': float(np.round(conc, 2)[0]),
                 'grayscale': int(round(np.mean(gray_image))),
             })
 
