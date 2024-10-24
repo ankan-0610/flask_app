@@ -252,10 +252,10 @@ def predict_result():
 
             feature = 1-mean_gray/gray0
 
-            if feature<0.5182:
-                conc = float(0.12562*feature + 0.00026629)
+            if feature<0.502:
+                conc = float((feature - 0.00026629)/0.12562)
             else:
-                conc = float(0.02405*feature + 0.41775)
+                conc = float((feature - 0.41775)/0.02405)
 
             prediction_results.append({
                 'image_url': image_url,
